@@ -7,6 +7,9 @@ import faiss
 from embedding_model import encode
 
 
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
+
 EMBEDDINGS_FILE = 'embeddings.npy'
 METADATA_FILE = 'products_metadata.pkl'
 
@@ -21,6 +24,7 @@ with open('products.txt', 'r', encoding='utf-8') as f:
                 'nutrition': parts[1]
             })
 
+
 if os.path.exists(EMBEDDINGS_FILE) and os.path.exists(METADATA_FILE):
     embeddings = np.load(EMBEDDINGS_FILE)
     with open(METADATA_FILE, 'rb') as f:
@@ -28,7 +32,14 @@ if os.path.exists(EMBEDDINGS_FILE) and os.path.exists(METADATA_FILE):
     print("Эмбеддинги и метаданные загружены из файлов.")
 else:
     product_names = [p['name'] for p in products]
-    embeddings = encode(product_names)
+    batch_size = 16  # или меньшее число
+    embeddings_list = []  # используем список для сбора батчей эмбеддингов
+    for i in range(0, len(product_names), batch_size):
+        batch = product_names[i:i + batch_size]
+        batch_embeddings = encode(batch)  # предполагается, что возвращается NumPy-массив размерности (batch_size, d)
+        embeddings_list.append(batch_embeddings)
+
+    embeddings = np.vstack(embeddings_list)  # или np.concatenate(embeddings_list, axis=0)
 
     normalize_L2(embeddings)
 
@@ -38,13 +49,10 @@ else:
     metadata = products
     print("Эмбеддинги и метаданные сохранены.")
 
-# Далее вы можете использовать embeddings для построения FAISS-индекса:
 
 INDEX_FILE = 'faiss_index.index'
 
-# Предполагаем, что у вас уже есть эмбеддинги (либо вычисленные, либо загруженные из файла)
-# Если вы хотите их загрузить, используйте подход из предыдущего примера.
-# Здесь мы предполагаем, что переменная embeddings уже существует и эмбеддинги нормализованы.
+
 d = embeddings.shape[1]
 
 if os.path.exists(INDEX_FILE):
@@ -57,7 +65,7 @@ else:
     print("FAISS индекс создан и сохранён в файл.")
 
 # Поиск аналогичным образом:
-query = "яблоко"
+query = "что можно приготовить из говядины?"
 query_embedding = encode([query])
 faiss.normalize_L2(query_embedding)
 k = 3
@@ -68,7 +76,6 @@ for rank, idx in enumerate(indices[0]):
     product = metadata[idx]  # metadata загружены или сохранены ранее
     print(f"\nРезультат {rank + 1}:")
     print(f"Название: {product['name']}")
-    print(f"Описание: {product['description']}")
     print(f"Пищевая ценность: {product['nutrition']}")
     print(f"Схожесть: {distances[0][rank]:.4f}")
 

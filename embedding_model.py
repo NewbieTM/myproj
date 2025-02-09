@@ -1,16 +1,23 @@
 from transformers import AutoTokenizer, AutoModel
 import torch
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
+tokenizer = AutoTokenizer.from_pretrained("ai-forever/sbert_large_nlu_ru")
+model = AutoModel.from_pretrained("ai-forever/sbert_large_nlu_ru").to(device)
+model.eval()
+
 
 def encode(input):
+    if isinstance(input, str):
+        input = [input]
     encoded_input = tokenizer(input, padding=True, truncation=True, max_length=256, return_tensors='pt')
     encoded_input = {k: v.to(device) for k, v in encoded_input.items()}
-
     # Compute token embeddings
     with torch.no_grad():
         model_output = model(**encoded_input)
     sentence_embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
-    return sentence_embeddings.numpy()
+    return sentence_embeddings.cpu().numpy()
 
 #Mean Pooling - Take attention mask into account for correct averaging
 def mean_pooling(model_output, attention_mask):
@@ -26,11 +33,6 @@ def mean_pooling(model_output, attention_mask):
 #sentences = ['Привет! Как твои дела?',
 #             'А правда, что 42 твое любимое число?']
 
-#Load AutoModel from huggingface model repository
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)
-tokenizer = AutoTokenizer.from_pretrained("ai-forever/sbert_large_nlu_ru")
-model = AutoModel.from_pretrained("ai-forever/sbert_large_nlu_ru").to(device)
 
 #Tokenize sentences
 #Perform pooling. In this case, mean pooling

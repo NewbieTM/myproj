@@ -1,0 +1,6 @@
+faiss-cpu
+transformers
+torch
+bs4
+requests
+numpy
