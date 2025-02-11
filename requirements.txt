@@ -4,3 +4,4 @@ torch
 bs4
 requests
 numpy
+pymorphy3
