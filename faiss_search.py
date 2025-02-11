@@ -38,9 +38,3 @@ for word in words:
 
 
 
-
-
-
-
-
-
