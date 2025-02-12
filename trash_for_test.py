@@ -8,3 +8,4 @@
 # nlp = spacy.load("ru_core_news_lg")
 # doc = nlp('Сколько калорий в говядине и морковке?')
 # print(doc.ents)
+

@@ -59,15 +59,17 @@ def load_embeddings():
 def load_index():
     # FAISS Index load
     INDEX_FILE = 'db_and_weights/faiss_index.index'
+    embeddings = []
 
-    embeddings, metadata = load_embeddings()
-
-    d = embeddings.shape[1]
+    with open(METADATA_FILE, 'rb') as f:
+        metadata = pickle.load(f)
 
     if os.path.exists(INDEX_FILE):
         index = faiss.read_index(INDEX_FILE)
         print("FAISS индекс загружен из файла.")
     else:
+        embeddings, metadata = load_embeddings()
+        d = embeddings.shape[1]
         index = faiss.IndexFlatIP(d)
         index.add(embeddings)
         faiss.write_index(index, INDEX_FILE)

@@ -7,7 +7,7 @@ tokenizer = AutoTokenizer.from_pretrained("ai-forever/sbert_large_nlu_ru")
 model = AutoModel.from_pretrained("ai-forever/sbert_large_nlu_ru").to(device)
 model.eval()
 
- 
+
 def encode(input):
     if isinstance(input, str):
         input = [input]

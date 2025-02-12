@@ -8,9 +8,8 @@ morph = MorphAnalyzer()
 def cached_parse(word):
     return morph.parse(word)[0].normal_form
 
-
-word = 'калорий'
-
-res = cached_parse(word)
-print(res)
+if __name__ == '__main__':
+    word = 'калорий'
+    res = cached_parse(word)
+    print(res)
 
